@@ -83,6 +83,11 @@ function deal_content($content)
 
 	foreach(pq('script') as $script)
 	{
+		if (strpos(pq($script)->html(), '_getTracker') !== false OR strpos(pq($script)->html(), 'google-analytics.com/ga.js') !== false)
+		{
+			pq($script)->remove();
+			continue;
+		}
 		$src = pq($script)->attr('src');
 		$new_src = fetch_resource($src);
 		if (!empty($new_src))
@@ -172,6 +177,8 @@ function fetch_resource($url)
 		$pathinfo = pathinfo(str_replace('http://'.$sub_host.'/', '', $real_url));
 	$dirname = $pathinfo['dirname'];
 	preg_match('/^([^\.]+\.[a-zA-Z0-9]{2,5}).*/', $pathinfo['basename'], $match);
+	if (count($match) < 2)
+		return $real_url;
 	$basename = $match[1];
 	$dest_dir = 'cache/'.$g_id.'/'.$dirname;
 	if (!file_exists($dest_dir))

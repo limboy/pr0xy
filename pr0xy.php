@@ -3,6 +3,10 @@ require 'vendor/http_lite.php';
 require 'vendor/phpQuery/phpQuery.php';
 
 $g_url = base64_decode($_POST['url']);
+if (substr($g_url, 'youtube.com') !== false)
+{
+	die('这个链接就不要尝试了，换一个吧');
+}
 $g_content = '';
 
 if (substr($g_url,0,7) !== 'http://')

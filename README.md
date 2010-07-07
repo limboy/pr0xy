@@ -7,5 +7,4 @@ sqlite 3
 
 注意事项
 ======
-确保cache和db目录可写
-
+新建cache文件夹，同时确保cache和db目录可写

@@ -16,7 +16,7 @@ $g_content = '';
 
 if (substr($g_url,0,7) !== 'http://')
 {
-	$g_url = $g_schema.'://'.$g_url;
+	$g_url = 'http://'.$g_url;
 }
 
 $is_url = (bool) filter_var($g_url, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED);

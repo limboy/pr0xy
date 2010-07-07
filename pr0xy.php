@@ -18,6 +18,10 @@ $parsed_url = parse_url($g_url);
 $g_host = $parsed_url['host'];
 $g_path = $parsed_url['path'];
 
+if (!file_exists('db/db.sqlite')) 
+{
+	copy('db/db_sample.sqlite', 'db/db.sqlite');
+}
 
 $dbh = new PDO('sqlite:db/db.sqlite');
 $sql = 'SELECT * FROM url WHERE url="'.$g_url.'"';

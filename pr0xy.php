@@ -80,6 +80,12 @@ function deal_content($content)
 	$g_content = phpQuery::newDocument($content);
 	foreach(pq('link') as $link)
 	{
+		$type = pq($link)->attr('type');
+		if (strpos($type, 'atom') !== false OR strpos($type, 'rss') !== false)
+		{
+			pq($link)->remove();
+			continue;
+		}
 		$src = pq($link)->attr('href');
 		$new_src = fetch_resource($src);
 		if (!empty($new_src))

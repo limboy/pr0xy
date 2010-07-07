@@ -179,7 +179,7 @@ function fetch_resource($url)
 	}
 	$pathinfo = pathinfo(str_replace($g_schema.'://'.$g_host.'/', '', $real_url));
 	if (!empty($sub_host))
-		$pathinfo = pathinfo(str_replace($g_schema.'://'.$sub_host.'/', '', $real_url));
+		$pathinfo = pathinfo(str_replace('http://'.$sub_host.'/', '', $real_url));
 	$dirname = $pathinfo['dirname'];
 	preg_match('/^([^\.]+\.[a-zA-Z0-9]{2,5}).*/', $pathinfo['basename'], $match);
 	if (count($match) < 2)

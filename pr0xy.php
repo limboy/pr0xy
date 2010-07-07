@@ -177,7 +177,7 @@ function fetch_resource($url)
 	{
 		return $real_url;
 	}
-	$pathinfo = pathinfo(str_replace($g_schema.'://'.$g_host.'/', '', $real_url));
+	$pathinfo = pathinfo(str_replace('http://'.$g_host.'/', '', $real_url));
 	if (!empty($sub_host))
 		$pathinfo = pathinfo(str_replace('http://'.$sub_host.'/', '', $real_url));
 	$dirname = $pathinfo['dirname'];

@@ -8,10 +8,6 @@ $server_use_https = true;
 $g_schema = ($_SERVER['REMOTE_ADDR'] == '127.0.0.1')?'http':(($server_use_https)?'https':'http');
 
 $g_url = base64_decode($_POST['url']);
-if (strpos($g_url, 'youtube.com') !== false)
-{
-	die('这个链接就不要尝试了，换一个吧');
-}
 $g_content = '';
 
 if (substr($g_url,0,7) !== 'http://')

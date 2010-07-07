@@ -139,14 +139,14 @@ function fetch_resource($url)
 			{
 				$path = dirname($path);
 			}
-			$real_url = $g_schema.'://'.$g_host.$path.'/'.$file_path;
+			$real_url = 'http://'.$g_host.$path.'/'.$file_path;
 		}
 		elseif ($url[0] == '/')
 		{
-			$real_url = $g_schema.'://'.$g_host.$url;
+			$real_url = 'http://'.$g_host.$url;
 		}
 		else {
-			$real_url = $g_schema.'://'.$g_host.'/'.$url;
+			$real_url = 'http://'.$g_host.'/'.$url;
 		}
 	}
 	else {
@@ -200,6 +200,10 @@ function fetch_resource($url)
 		deal_css($dest_dir.'/'.$basename);
 	}
 	$repalce_url = $_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME']).'/cache/'.$g_id;
+	if ($g_schema == 'https')
+	{
+		$real_url = str_replace('http://', 'https://', $real_url);
+	}
 	if (empty($sub_host))
 		return str_replace($g_host, $repalce_url, $real_url);
 	return str_replace($sub_host, $repalce_url, $real_url);

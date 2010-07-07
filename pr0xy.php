@@ -57,10 +57,12 @@ if (!file_exists('cache/'.$g_id))
 
 file_put_contents('cache/'.$g_id.'/index.html', $g_content);
 $redirect_url = 'show.php/'.$g_id;
+/*
 echo <<<HTML
 	<html> <head> <meta http-equiv="REFRESH" content="0;url={$redirect_url}"></head> </html>
 HTML;
-//header('location:show.php/'.$g_id);
+//*/
+header('location:show.php/'.$g_id);
 exit;
 
 function deal_content($content)
@@ -109,7 +111,7 @@ function fetch_resource($url)
 {
 	global $g_path, $g_host, $g_id;
 	$real_url = $url;
-	if (strpos(str_replace($g_host, '', $url), '.') === false)
+	if (strpos(str_replace($g_host, '', $url), '.') === false OR strpos($url, '.rss') !== false)
 		return $url;
 	if (substr($url, 0, 7) !== 'http://')
 	{
@@ -137,6 +139,7 @@ function fetch_resource($url)
 		$host = parse_url($url,PHP_URL_HOST);
 		if ($host != $g_host)
 		{
+			/*
 			$no_www_host = str_replace('www', '', $g_host);
 			if (strpos($host, $no_www_host) === false)
 				return ;
@@ -144,6 +147,8 @@ function fetch_resource($url)
 			{
 				$sub_host = $host;
 			}
+			//*/
+			$sub_host = $host;
 		}
 	}
 	try {
@@ -156,7 +161,7 @@ function fetch_resource($url)
 	}
 	catch (Exception $e)
 	{
-		return;
+		return $real_url;
 	}
 	$pathinfo = pathinfo(str_replace('http://'.$g_host.'/', '', $real_url));
 	if (!empty($sub_host))
@@ -168,6 +173,7 @@ function fetch_resource($url)
 	if (!file_exists($dest_dir))
 	{
 		mkdir('cache/'.$g_id.'/'.$dirname, 0777, true);
+		chmod('cache/'.$g_id, 0777);
 		chmod('cache/'.$g_id.'/'.$dirname, 0777);
 	}
 	$fp = fopen($dest_dir.'/'.$basename, 'w');

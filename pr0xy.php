@@ -2,6 +2,11 @@
 require 'vendor/http_lite.php';
 require 'vendor/phpQuery/phpQuery.php';
 
+//如果服务端不启用https的话，将这个值设为false
+$server_use_https = true;
+
+$g_schema = ($_SERVER['REMOTE_ADDR'] == '127.0.0.1')?'http':(($server_use_https)?'https':'http');
+
 $g_url = base64_decode($_POST['url']);
 if (strpos($g_url, 'youtube.com') !== false)
 {
@@ -11,7 +16,7 @@ $g_content = '';
 
 if (substr($g_url,0,7) !== 'http://')
 {
-	$g_url = 'http://'.$g_url;
+	$g_url = $g_schema.'://'.$g_url;
 }
 
 $is_url = (bool) filter_var($g_url, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED);
@@ -118,7 +123,7 @@ function fetch_css($css_img)
 
 function fetch_resource($url)
 {
-	global $g_path, $g_host, $g_id;
+	global $g_path, $g_host, $g_id, $g_schema;
 	$real_url = $url;
 	if (strpos(str_replace($g_host, '', $url), '.') === false OR strpos($url, '.rss') !== false)
 		return $url;
@@ -134,14 +139,14 @@ function fetch_resource($url)
 			{
 				$path = dirname($path);
 			}
-			$real_url = 'http://'.$g_host.$path.'/'.$file_path;
+			$real_url = $g_schema.'://'.$g_host.$path.'/'.$file_path;
 		}
 		elseif ($url[0] == '/')
 		{
-			$real_url = 'http://'.$g_host.$url;
+			$real_url = $g_schema.'://'.$g_host.$url;
 		}
 		else {
-			$real_url = 'http://'.$g_host.'/'.$url;
+			$real_url = $g_schema.'://'.$g_host.'/'.$url;
 		}
 	}
 	else {
@@ -172,9 +177,9 @@ function fetch_resource($url)
 	{
 		return $real_url;
 	}
-	$pathinfo = pathinfo(str_replace('http://'.$g_host.'/', '', $real_url));
+	$pathinfo = pathinfo(str_replace($g_schema.'://'.$g_host.'/', '', $real_url));
 	if (!empty($sub_host))
-		$pathinfo = pathinfo(str_replace('http://'.$sub_host.'/', '', $real_url));
+		$pathinfo = pathinfo(str_replace($g_schema.'://'.$sub_host.'/', '', $real_url));
 	$dirname = $pathinfo['dirname'];
 	preg_match('/^([^\.]+\.[a-zA-Z0-9]{2,5}).*/', $pathinfo['basename'], $match);
 	if (count($match) < 2)

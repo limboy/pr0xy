@@ -7,13 +7,11 @@ $server_use_https = true;
 
 $g_schema = ($_SERVER['REMOTE_ADDR'] == '127.0.0.1')?'http':(($server_use_https)?'https':'http');
 
-$g_url = base64_decode($_POST['url']);
+$g_url = $_POST['url'];
 $g_content = '';
 
-if (substr($g_url,0,7) !== 'http://')
-{
+if (strpos($g_url, '://') === false)
 	$g_url = 'http://'.$g_url;
-}
 
 $is_url = (bool) filter_var($g_url, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED);
 
@@ -39,8 +37,8 @@ if (!$row)
 }
 else {
 	$g_id =  $row['id'];
-	header('location:show.php/'.$g_id);
-	exit;
+	//header('location:show.php/'.$g_id);
+	//exit;
 }
 
 
@@ -74,10 +72,17 @@ function deal_content($content)
 {
 	global $g_content;
 	$g_content = phpQuery::newDocument($content);
+
+	foreach(pq('style') as $style)
+	{
+		$new_style = preg_replace_callback('/@import +[\'"](.*)[\'"]/', 'deal_css_import', pq($style)->html());
+		pq($style)->html($new_style);
+	}
+
 	foreach(pq('link') as $link)
 	{
 		$type = pq($link)->attr('type');
-		if (strpos($type, 'atom') !== false OR strpos($type, 'rss') !== false)
+		if (strpos($type, 'atom') !== false OR strpos($type, 'rss') !== false OR strpos($type, 'xml') !== false)
 		{
 			pq($link)->remove();
 			continue;
@@ -96,9 +101,10 @@ function deal_content($content)
 			continue;
 		}
 		$src = pq($script)->attr('src');
+		if (empty($src))
+			continue;
 		$new_src = fetch_resource($src);
-		if (!empty($new_src))
-			pq($script)->attr('src', $new_src);
+		pq($script)->attr('src', $new_src);
 	}
 
 	foreach (pq('img') as $img)
@@ -108,6 +114,15 @@ function deal_content($content)
 		if (!empty($new_src))
 			pq($img)->attr('src', $new_src);
 	}
+}
+
+function deal_css_import($match)
+{
+	if (strpos($match[1], '://') === false)
+	{
+		return '@import "'.fetch_resource($match[1]).'"';
+	}
+	return $match[0];
 }
 
 function deal_css($css_file)
@@ -127,9 +142,7 @@ function fetch_resource($url)
 {
 	global $g_path, $g_host, $g_id, $g_schema;
 	$real_url = $url;
-	if (strpos(str_replace($g_host, '', $url), '.') === false OR strpos($url, '.rss') !== false)
-		return $url;
-	if (substr($url, 0, 7) !== 'http://')
+	if (strpos($url, '://') === false)
 	{
 		if (substr($url, 0, 3) == '../')
 		{
@@ -151,62 +164,10 @@ function fetch_resource($url)
 			$real_url = 'http://'.$g_host.'/'.$url;
 		}
 	}
-	else {
-		$host = parse_url($url,PHP_URL_HOST);
-		if ($host != $g_host)
-		{
-			/*
-			$no_www_host = str_replace('www', '', $g_host);
-			if (strpos($host, $no_www_host) === false)
-				return ;
-			else
-			{
-				$sub_host = $host;
-			}
-			//*/
-			$sub_host = $host;
-		}
-	}
-	try {
-		$content = remote::get($real_url,array(
-			CURLOPT_BINARYTRANSFER => 1,
-		));
-
-		if ($content === false)
-			return;
-	}
-	catch (Exception $e)
-	{
-		return $real_url;
-	}
-	$pathinfo = pathinfo(str_replace('http://'.$g_host.'/', '', $real_url));
-	if (!empty($sub_host))
-		$pathinfo = pathinfo(str_replace('http://'.$sub_host.'/', '', $real_url));
-	$dirname = $pathinfo['dirname'];
-	preg_match('/^([^\.]+\.[a-zA-Z0-9]{2,5}).*/', $pathinfo['basename'], $match);
-	if (count($match) < 2)
-		return $real_url;
-	$basename = $match[1];
-	$dest_dir = 'cache/'.$g_id.'/'.$dirname;
-	if (!file_exists($dest_dir))
-	{
-		mkdir('cache/'.$g_id.'/'.$dirname, 0777, true);
-		chmod('cache/'.$g_id, 0777);
-		chmod('cache/'.$g_id.'/'.$dirname, 0777);
-	}
-	$fp = fopen($dest_dir.'/'.$basename, 'w');
-	fwrite($fp, $content);
-	fclose($fp);
-	if (strpos($basename, '.css') !== false)
-	{
-		deal_css($dest_dir.'/'.$basename);
-	}
-	$repalce_url = $_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME']).'/cache/'.$g_id;
+	$append_url = $g_schema.'://'.$_SERVER['HTTP_HOST'].'/get/';
 	if ($g_schema == 'https')
 	{
 		$real_url = str_replace('http://', 'https://', $real_url);
 	}
-	if (empty($sub_host))
-		return str_replace($g_host, $repalce_url, $real_url);
-	return str_replace($sub_host, $repalce_url, $real_url);
+	return $append_url.$real_url;
 }

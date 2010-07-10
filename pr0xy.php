@@ -7,7 +7,7 @@ $server_use_https = true;
 
 $g_schema = ($_SERVER['REMOTE_ADDR'] == '127.0.0.1')?'http':(($server_use_https)?'https':'http');
 
-$g_url = $_POST['url'];
+$g_url = $_GET['url'];
 $g_content = '';
 
 if (strpos($g_url, '://') === false)
@@ -79,6 +79,15 @@ function deal_content($content)
 		pq($style)->html($new_style);
 	}
 
+	foreach(pq('a') as $a)
+	{
+		$href = pq($a)->attr('href');
+		if (substr($href, 0, 4) == 'java')
+			continue;
+		$new_src = fetch_resource($href, true);
+		pq($a)->attr('href', $new_src);
+	}
+
 	foreach(pq('link') as $link)
 	{
 		$type = pq($link)->attr('type');
@@ -89,8 +98,7 @@ function deal_content($content)
 		}
 		$src = pq($link)->attr('href');
 		$new_src = fetch_resource($src);
-		if (!empty($new_src))
-			pq($link)->attr('href', $new_src);
+		pq($link)->attr('href', $new_src);
 	}
 
 	foreach(pq('script') as $script)
@@ -138,7 +146,7 @@ function fetch_css($css_img)
 	return 'url('.fetch_resource($css_img).')';
 }
 
-function fetch_resource($url)
+function fetch_resource($url, $page_link = false)
 {
 	global $g_path, $g_host, $g_id, $g_schema;
 	$real_url = $url;
@@ -165,6 +173,8 @@ function fetch_resource($url)
 		}
 	}
 	$append_url = $g_schema.'://'.$_SERVER['HTTP_HOST'].'/get/';
+	if ($page_link)
+		$append_url = $g_schema.'://'.$_SERVER['HTTP_HOST'].'/pr0xy.php?url=';
 	if ($g_schema == 'https')
 	{
 		$real_url = str_replace('http://', 'https://', $real_url);

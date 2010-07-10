@@ -175,9 +175,5 @@ function fetch_resource($url, $page_link = false)
 	$append_url = $g_schema.'://'.$_SERVER['HTTP_HOST'].'/get/';
 	if ($page_link)
 		$append_url = $g_schema.'://'.$_SERVER['HTTP_HOST'].'/pr0xy.php?url=';
-	if ($g_schema == 'https')
-	{
-		$real_url = str_replace('http://', 'https://', $real_url);
-	}
 	return $append_url.$real_url;
 }

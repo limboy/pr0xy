@@ -2,8 +2,22 @@
 
 环境要求
 ======
+nginx
 php 5.2+
 sqlite 3
+
+nginx配置
+======
+	location /get/
+	{
+		if ( $uri ~ ^/get/http./+([^/]+)/(.+)$) {
+		  set $hostx $1;
+		  set $addrs $2;
+		}
+		resolver 208.67.220.220;
+		proxy_pass http://$hostx/$addrs;
+		proxy_set_header referer http://$hostx;
+	}
 
 注意事项
 ======
